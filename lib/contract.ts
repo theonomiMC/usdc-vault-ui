@@ -1,6 +1,22 @@
 export const VAULT_ADDRESS =
   "0x3D0dDdCCdCA542AB2aB1D1d328F4e4344a330589" as const;
 
+export const USDC_ADDRESS = process.env
+  .NEXT_PUBLIC_USDC_ADDRESS as `0x${string}`;
+  
+export const USDC_ABI = [
+  {
+    name: "approve",
+    type: "function",
+    inputs: [
+      { name: "spender", type: "address" },
+      { name: "amount", type: "uint256" },
+    ],
+    outputs: [{ name: "", type: "bool" }],
+    stateMutability: "nonpayable",
+  },
+] as const;
+
 export const VAULT_ABI = [
   {
     type: "function",

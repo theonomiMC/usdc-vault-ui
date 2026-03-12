@@ -56,7 +56,7 @@ export function VaultStats() {
       <div>
         <p className="text-xs text-gray-400">Share Price</p>
         <p className="text-lg font-semibold text-gray-900">
-          {(Number(sharePrice) / 10**18).toFixed(4)}
+          {(Number(sharePrice) / 10**18).toFixed(2)}
         </p>
       </div>
       <div>

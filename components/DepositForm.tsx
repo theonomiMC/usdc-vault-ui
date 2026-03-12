@@ -1,27 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import {
   useWriteContract,
   useAccount,
   useWaitForTransactionReceipt,
 } from "wagmi";
-import { VAULT_ADDRESS, VAULT_ABI } from "@/lib/contract";
-import { BaseError, parseUnits } from "viem";
-
-const USDC_ADDRESS = "0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238";
-const USDC_ABI = [
-  {
-    name: "approve",
-    type: "function",
-    inputs: [
-      { name: "spender", type: "address" },
-      { name: "amount", type: "uint256" },
-    ],
-    outputs: [{ name: "", type: "bool" }],
-    stateMutability: "nonpayable",
-  },
-] as const;
+import {
+  VAULT_ADDRESS,
+  VAULT_ABI,
+  USDC_ADDRESS,
+  USDC_ABI,
+} from "@/lib/contract";
+import { TxFeedback } from "@/components/TxFeedback";
+import { parseUnits, BaseError } from "viem";
 
 export function DepositForm() {
   const {
@@ -48,15 +40,16 @@ export function DepositForm() {
         setShowSuccess(true);
         setStep("approve");
         setAmount("");
-        setTimeout(()=>setShowSuccess(false),7000)
+        setTimeout(() => setShowSuccess(false), 7000);
       }
     } else {
       setShowError(true);
     }
 
-    if(contractError && step == "deposit"){
-      setStep("approve")
-      reset()
+    if (contractError && step == "deposit") {
+      setStep("approve");
+      setAmount("");
+      reset();
     }
   }, [isSuccess, hash, contractError, reset]);
 
@@ -100,8 +93,9 @@ export function DepositForm() {
 
   return (
     <div
-      className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-3 
-                transition-shadow duration-300 hover:shadow-lg"
+      className="w-full bg-white rounded-xl border
+       border-gray-200 p-5 md:p-6 flex flex-col gap-3
+       transition-shadow duration-300 hover:shadow-lg"
     >
       <div className="flex flex-col gap-1">
         <label className="text-xs text-gray-400 font-medium">
@@ -110,19 +104,25 @@ export function DepositForm() {
         <input
           type="number"
           value={amount}
+          inputMode="decimal"
+          disabled={isConfirming}
+          onFocus={() => {
+            setShowError(false);
+            reset();
+          }}
           onChange={(e) => setAmount(e.target.value)}
-          className="border-0 border-b-2 border-gray-200 
+          className="w-full border-0 border-b-2 border-gray-200 
             focus:border-indigo-500 focus:outline-none 
-            py-2 text-gray-900 text-sm transition-colors
+            py-2 text-gray-900 text-sm md:text-base transition-colors
             bg-transparent"
           placeholder="0.00"
         />
       </div>
       <button
-        disabled={isPending || isConfirming || !amount}
+        disabled={isPending || isConfirming || !amount || Number(amount) <= 0}
         onClick={step === "approve" ? handleApprove : handleDeposit}
         className={`w-full font-medium py-2 px-4 rounded-lg transition-all
-           duration-500 transform disabled:cursor-not-allowed
+           duration-300 transform active:scale-[0.98] disabled:cursor-not-allowed
     ${
       step === "approve"
         ? "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100"
@@ -130,13 +130,18 @@ export function DepositForm() {
     } 
     text-white shadow-md active:scale-95 disabled:opacity-50`}
       >
-        {isConfirming
-          ? "Confirming..."
-          : isPending
-            ? "Wait..."
-            : step === "approve"
-              ? "1. Approve USDC"
-              : "2. Deposit to Vault"}
+        <span className="flex items-center justify-center gap-2">
+          {isConfirming || isPending ? (
+            <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : null}
+          {isConfirming
+            ? "Confirming..."
+            : isPending
+              ? "Check Wallet..."
+              : step === "approve"
+                ? "1. Approve USDC"
+                : "2. Deposit to Vault"}
+        </span>
       </button>
       {/* Error Message */}
       {showError && contractError && (
@@ -145,21 +150,12 @@ export function DepositForm() {
         </p>
       )}
       {/* Success Link */}
-      {showSuccess && hash && (
-        <div className="mt-2 text-left">
-          <p className="text-[10px] text-emerald-600 font-bold uppercase mb-1">
-            Transaction Success!
-          </p>
-          <a
-            href={`https://sepolia.etherscan.io/tx/${hash}`}
-            target="_blank"
-            rel="noreferrer"
-            className="text-[10px] text-indigo-500 hover:underline block truncate"
-          >
-            View Hash: {hash?.slice(0, 24)}...
-          </a>
-        </div>
-      )}
+        <TxFeedback
+          showSuccess={showSuccess}
+          showError={showError}
+          hash={hash}
+          contractError={contractError as any}
+        />
     </div>
   );
 }

@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "USDC Vault",
+  title: "USDC Vault Protocol",
   description: "ERC-4626 USDC Vault with strategy integration",
 };
 
@@ -24,8 +24,9 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en">
       <body>
         <Providers>{children}</Providers>
       </body>

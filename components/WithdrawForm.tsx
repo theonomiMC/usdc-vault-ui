@@ -7,9 +7,11 @@ import {
   useWaitForTransactionReceipt,
 } from "wagmi";
 import { VAULT_ADDRESS, VAULT_ABI } from "@/lib/contract";
+import { useTxState } from "@/hooks/useTxState";
+import { TxFeedback } from "@/components/TxFeedback";
 import { parseUnits, BaseError } from "viem";
 
-export function WithdrawFrom() {
+export function WithdrawForm() {
   const { address } = useAccount();
   const {
     writeContract,
@@ -62,8 +64,9 @@ export function WithdrawFrom() {
 
   return (
     <div
-      className="bg-white rounded-xl border border-gray-200 p-6 flex flex-col gap-3 
-                transition-shadow duration-300 hover:shadow-lg"
+      className="w-full bg-white rounded-xl border 
+      border-gray-200 p-5 md:p-6 flex flex-col gap-3 
+      transition-shadow duration-300 hover:shadow-lg"
     >
       <div className="flex flex-col gap-1">
         <label className="text-xs text-gray-400 font-medium">
@@ -71,22 +74,39 @@ export function WithdrawFrom() {
         </label>
         <input
           type="number"
+          inputMode="decimal"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          className="border-0 border-b-2 border-gray-200 
-    focus:border-indigo-500 focus:outline-none 
-    py-2 text-gray-900 text-sm transition-colors
-    bg-transparent"
+          className="w-full border-0 border-b-2 border-gray-200 
+            focus:border-indigo-500 focus:outline-none 
+            py-2 text-gray-900 text-sm md:text-base transition-colors
+            bg-transparent"
           placeholder="0.00"
         />
       </div>
       <button
-        disabled={isPending || isConfirming || !amount || !address || Number(amount) <= 0}
+        disabled={
+          isPending ||
+          isConfirming ||
+          !amount ||
+          !address ||
+          Number(amount) <= 0
+        }
         onClick={handleWithdraw}
-        className="w-full bg-indigo-600 hover:bg-indigo-700
-         text-white font-medium py-2 px-4 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium 
+                   py-2 px-4 rounded-lg transition-all active:scale-[0.98] 
+                   disabled:opacity-50 disabled:cursor-not-allowed shadow-md shadow-indigo-50"
       >
-        {isConfirming ? "Confirming..." : isPending ? "Wait..." : "Withdraw"}
+        <span className="flex items-center justify-center gap-2">
+          {(isConfirming || isPending) && (
+            <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          )}
+          {isConfirming
+            ? "Confirming Transaction..."
+            : isPending
+              ? "Check Wallet..."
+              : "Withdraw Assets"}
+        </span>
       </button>
       {/* Error Message */}
       {showError && contractError && (
@@ -94,22 +114,12 @@ export function WithdrawFrom() {
           {(contractError as BaseError).shortMessage || "Transaction failed"}
         </p>
       )}
-      {/* Success Link */}
-      {showSuccess && hash && (
-        <div className="mt-2 text-left">
-          <p className="text-[10px] text-emerald-600 font-bold uppercase mb-1">
-            Transaction Success!
-          </p>
-          <a
-            href={`https://sepolia.etherscan.io/tx/${hash}`}
-            target="_blank"
-            rel="noreferrer"
-            className="text-[10px] text-indigo-500 hover:underline block truncate"
-          >
-            View Hash: {hash.slice(0, 24)}...
-          </a>
-        </div>
-      )}
+        <TxFeedback
+          showSuccess={showSuccess}
+          showError={showError}
+          hash={hash}
+          contractError={contractError as any}
+        />
     </div>
   );
 }
