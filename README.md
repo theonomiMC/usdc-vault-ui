@@ -46,5 +46,5 @@ The system uses a Proxy-Implementation pattern:
 
 ## 📄 Smart Contracts
 
-Contract repo: https://github.com/theonomiMC/UsdcVault/tree/vault-upgradeable
+Contract repo: https://github.com/theonomiMC/UsdcVault/tree/main
 Proxy (Sepolia): `0x3D0dDdCCdCA542AB2aB1D1d328F4e4344a330589`
